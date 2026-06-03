@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Join Room</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Load the custom Kirsty font */
+        @font-face {
+            font-family: 'Kirsty';
+            src: url('Kirsty.ttf') format('truetype'); 
+        }
+
+        #dashboard {
+            display: none; /* Hidden until they join */
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        .slamazon-title {
+            font-family: 'Kirsty', sans-serif;
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        #startGameBtn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container" id="joinContainer">
+    <h1>JOIN ROOM</h1>
+
+    <input
+        id="roomCode"
+        maxlength="4"
+        placeholder="ROOM CODE"
+        style="text-transform: uppercase;">
+
+    <input
+        id="playerName"
+        maxlength="15"
+        placeholder="NAME">
+
+    <input
+        type="file"
+        id="avatar"
+        accept="image/png,image/jpeg">
+
+    <button onclick="joinRoom()" id="joinBtn">
+        JOIN
+    </button>
+</div>
+
+<div id="dashboard">
+    <h1 class="slamazon-title">SLAMAZON</h1>
+    <h2 id="dashName"></h2>
+    <img id="dashImage" width="150" height="150" style="border-radius: 10px; border: 2px solid #444;"><br>
+    
+    <button id="startGameBtn" style="display: none;" onclick="startGame()">Start Game</button>
+</div>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+<script>
+
+const socket = io("http://192.168.40.184:3000");
+
+let joining = false;
+
+// ---- SOCKET LISTENERS ----
+
+socket.on("joinSuccess", (data) => {
+    // 1. Hide the join form
+    document.getElementById("joinContainer").style.display = "none";
+    
+    // 2. Show the player dashboard
+    document.getElementById("dashboard").style.display = "block";
+    
+    // 3. Populate their data
+    document.getElementById("dashName").innerText = data.name;
+    document.getElementById("dashImage").src = data.image;
+    
+    // 4. Check if they are Player 1 (Slot 0)
+    if (data.slot === 0) {
+        document.getElementById("startGameBtn").style.display = "inline-block";
+    }
+});
+
+socket.on("invalidRoomCode", () => {
+    alert("Invalid room code");
+    joining = false;
+});
+
+socket.on("invalidName", () => {
+    alert("Invalid name");
+    joining = false;
+});
+
+socket.on("roomNotFound", () => {
+    alert("Room not found");
+    joining = false;
+});
+
+socket.on("roomFull", () => {
+    alert("Room is full");
+    joining = false;
+});
+
+socket.on("invalidImage", () => {
+    alert("Invalid image");
+    joining = false;
+});
+
+socket.on("invalidImageType", () => {
+    alert("Only PNG and JPG images are allowed");
+    joining = false;
+});
+
+socket.on("imageTooLarge", () => {
+    alert("Image must be under 2MB");
+    joining = false;
+});
+
+
+// ---- FUNCTIONS ----
+
+function joinRoom() {
+    if (joining) return;
+    joining = true;
+
+    let code = document.getElementById("roomCode").value.toUpperCase().trim().substring(0, 4);
+    let name = document.getElementById("playerName").value.trim().substring(0, 15);
+
+    if (code.length < 1) {
+        alert("Enter room code");
+        joining = false;
+        return;
+    }
+
+    if (name.length < 1) {
+        alert("Enter name");
+        joining = false;
+        return;
+    }
+
+    const file = document.getElementById("avatar").files[0];
+
+    if (!file) {
+        alert("Select an image");
+        joining = false;
+        return;
+    }
+
+    const allowedTypes = ["image/png", "image/jpeg"];
+
+    if (!allowedTypes.includes(file.type)) {
+        alert("Only PNG and JPG images are allowed");
+        joining = false;
+        return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+        alert("Image must be under 2MB");
+        joining = false;
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function() {
+        socket.emit("joinRoom", {
+            code: code,
+            name: name,
+            image: reader.result
+        });
+    };
+
+    reader.readAsDataURL(file);
+}
+
+function startGame() {
+    // Placeholder logic - this is where you'll emit your start game event
+    alert("Initiating Start Sequence...");
+    // socket.emit("startGame", { code: document.getElementById("roomCode").value });
+}
+
+</script>
+
+</body>
+</html>
