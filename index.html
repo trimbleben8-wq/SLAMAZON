@@ -2,32 +2,45 @@
 <html>
 
 <head>
+    <meta charset="UTF-8">
+    
+    <!-- Mobile-friendly viewport -->
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
     <title>Join Room</title>
-    <link rel="stylesheet" href="style.css">
+
+    <link rel="stylesheet" href="Style.css">
+
     <style>
-        /* Load the custom Kirsty font */
         @font-face {
             font-family: 'Kirsty';
-            src: url('Kirsty.ttf') format('truetype'); 
+            src: url('Kirsty.ttf') format('truetype');
         }
 
         #dashboard {
-            display: none; /* Hidden until they join */
+            display: none;
             text-align: center;
             margin-top: 50px;
         }
 
         .slamazon-title {
             font-family: 'Kirsty', sans-serif;
-            font-size: 4rem;
+            font-size: clamp(2.5rem, 10vw, 4rem);
             margin-bottom: 20px;
         }
-        
+
         #startGameBtn {
             margin-top: 20px;
             padding: 10px 20px;
             font-size: 1.2rem;
             cursor: pointer;
+            width: auto;
+        }
+
+        #dashImage {
+            max-width: 40vw;
+            height: auto;
         }
     </style>
 </head>
